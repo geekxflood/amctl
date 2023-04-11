@@ -1,8 +1,8 @@
-# alertmanager-cli / amctl
+# alertmanager-cli
 
 ## Status
 
-- In **development**, not ready for production use.
+- amctl is in active **development**, not ready for production use.
 
 ## Description
 
