@@ -1,6 +1,6 @@
-IMAGE_NAME = amcli
+IMAGE_NAME = amclt
 
-.PHONY: all binary clean
+.PHONY: all build install clean
 
 all: build
 
@@ -9,8 +9,11 @@ build:
 	go build -a  \
 		-gcflags=all="-l -B" \
 		-ldflags="-w -s" \
-		-o binary/$(IMAGE_NAME) \
+		-o build/$(IMAGE_NAME) \
 		./...
 
+install: build
+	cp build/$(IMAGE_NAME) /usr/local/bin/$(IMAGE_NAME)
+
 clean:
-	rm -rf binary
+	rm -rf build
