@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"geekxflood/alertmanager-cli/src/models"
+	"alertmanager-cli/models"
 )
 
 // GetAlertsReader is a Reader for the GetAlerts structure.

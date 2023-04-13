@@ -15,7 +15,7 @@ import (
 	cr "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"geekxflood/alertmanager-cli/src/models"
+	"alertmanager-cli/models"
 )
 
 // NewPostSilencesParams creates a new PostSilencesParams object,

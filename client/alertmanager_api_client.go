@@ -10,11 +10,11 @@ import (
 	httptransport "github.com/go-openapi/runtime/client"
 	"github.com/go-openapi/strfmt"
 
-	"geekxflood/alertmanager-cli/src/client/alert"
-	"geekxflood/alertmanager-cli/src/client/alertgroup"
-	"geekxflood/alertmanager-cli/src/client/general"
-	"geekxflood/alertmanager-cli/src/client/receiver"
-	"geekxflood/alertmanager-cli/src/client/silence"
+	"alertmanager-cli/client/alert"
+	"alertmanager-cli/client/alertgroup"
+	"alertmanager-cli/client/general"
+	"alertmanager-cli/client/receiver"
+	"alertmanager-cli/client/silence"
 )
 
 // Default alertmanager API HTTP client.

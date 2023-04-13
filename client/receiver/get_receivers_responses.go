@@ -12,7 +12,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"geekxflood/alertmanager-cli/src/models"
+	"alertmanager-cli/models"
 )
 
 // GetReceiversReader is a Reader for the GetReceivers structure.
