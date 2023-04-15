@@ -36,7 +36,6 @@ import (
 var alertmanagerURL string
 var list bool
 var foundAlert bool
-var secure bool
 
 var rootCmd = &cobra.Command{
 	Use:   "amctl",
@@ -55,14 +54,6 @@ var rootCmd = &cobra.Command{
 			Schemes:  []string{"http"},
 		})
 
-		// apiClient ignore ssl verify
-		if secure {
-			tr := &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			}
-			http.DefaultClient = &http.Client{Transport: tr}
-		}
-
 		// Check if the user wants to list the alerts
 		// If not, we will just print the Alertmanager status
 		if list {
@@ -71,6 +62,12 @@ var rootCmd = &cobra.Command{
 			// Create a new parameter for the API call
 			// The parameter will be used to filter the alerts
 			params := alert.NewGetAlertsParams()
+
+			params.HTTPClient = &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			}
 
 			// Make the API call
 			// The API call will return a list of alerts
@@ -139,5 +136,4 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVarP(&alertmanagerURL, "alertmanager", "a", "", "Alertmanager URL")
 	rootCmd.Flags().BoolVarP(&list, "list", "l", false, "List alerts")
-	rootCmd.Flags().BoolVarP(&secure, "secure", "s", false, "Use HTTPS")
 }
