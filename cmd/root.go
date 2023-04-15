@@ -47,6 +47,8 @@ var rootCmd = &cobra.Command{
 			return
 		}
 
+		// Create a new client for the Alertmanager API
+		// The client will be used to make API calls
 		apiClient := client.NewHTTPClientWithConfig(nil, &client.TransportConfig{
 			Host:     alertmanagerURL,
 			BasePath: client.DefaultBasePath,
@@ -61,15 +63,25 @@ var rootCmd = &cobra.Command{
 			http.DefaultClient = &http.Client{Transport: tr}
 		}
 
+		// Check if the user wants to list the alerts
+		// If not, we will just print the Alertmanager status
 		if list {
 			fmt.Println("Listing alerts")
+
+			// Create a new parameter for the API call
+			// The parameter will be used to filter the alerts
 			params := alert.NewGetAlertsParams()
+
+			// Make the API call
+			// The API call will return a list of alerts
 			alerts, err := apiClient.Alert.GetAlerts(params)
 			if err != nil {
 				fmt.Println("Error fetching alerts: ", err)
 				return
 			}
 
+			// Loop through the list of alerts
+			// Print the alert name, start and end time, labels and annotations
 			for _, alert := range alerts.GetPayload() {
 				if *alert.Status.State == "active" {
 					fmt.Printf("Alert Name: %s\n", alert.Labels["alertname"])
@@ -92,9 +104,13 @@ var rootCmd = &cobra.Command{
 				}
 			}
 
+			// If no alerts are found, print a message
 			if !foundAlert {
 				fmt.Println("No alert found")
 			}
+
+			// If the user does not want to list the alerts
+			// We will just print the Alertmanager status
 		} else {
 			fmt.Println("Fetching Alertmanager status:")
 			status, err := apiClient.General.GetStatus(general.NewGetStatusParams())
