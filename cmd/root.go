@@ -24,14 +24,21 @@ package cmd
 import (
 	"crypto/tls"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/charmbracelet/lipgloss"
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/strfmt"
+	"github.com/go-openapi/swag"
 	"github.com/prometheus/alertmanager/api/v2/client"
 	"github.com/prometheus/alertmanager/api/v2/client/alert"
 	"github.com/prometheus/alertmanager/api/v2/client/general"
+	"github.com/prometheus/alertmanager/api/v2/client/silence"
+	"github.com/prometheus/alertmanager/api/v2/models"
 	"github.com/spf13/cobra"
 )
 
@@ -39,7 +46,6 @@ var alertmanagerURL string
 var list bool
 var foundAlert bool
 var insecure bool
-var silence bool
 var silenceParams string
 var endTime string
 
@@ -73,6 +79,7 @@ var rootCmd = &cobra.Command{
 		// The parameter will be used to filter the alerts
 		statusParams := general.NewGetStatusParams()
 		alertParams := alert.NewGetAlertsParams()
+		postSilenceParams := silence.NewPostSilencesParams()
 		if insecure {
 			statusParams.HTTPClient = &http.Client{
 				Transport: &http.Transport{
@@ -80,6 +87,11 @@ var rootCmd = &cobra.Command{
 				},
 			}
 			alertParams.HTTPClient = &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			}
+			postSilenceParams.HTTPClient = &http.Client{
 				Transport: &http.Transport{
 					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 				},
@@ -138,40 +150,81 @@ var rootCmd = &cobra.Command{
 		} else {
 			// If the user does not want to list the alerts
 			// We will just print the Alertmanager status
-			if silence {
+			if silenceParams != "" {
 				fmt.Println("Silencing alerts")
 
-				// endsAt := parsingDate(endTime)
-				// startsAt := time.Now()
-				// if endTime == "" {
-				// 	fmt.Println("No end time provided, silencing for 2 hours")
-				// 	endsAt := startsAt.Add(2 * time.Hour)
-				// }
-				// if silenceParams == "" {
-				// 	panic("No silence parameters provided, quitting")
-				// }
+				var endsAt time.Time
+				startsAt := time.Now()
+				if endTime == "" {
+					fmt.Println("No end time provided, silencing for 2 hours")
+					endsAt = startsAt.Add(2 * time.Hour)
+				} else {
+					endsAt, _ = time.Parse("2006-01-02T15:04:05", endTime)
+				}
+				if silenceParams == "" {
+					panic("No silence parameters provided, quitting")
+				}
 
-				// // Parse silenceParams into key-value pairs
-				// pairs := strings.Split(silenceParams, ",")
-				// silenceMatcher := make([]*models.Matcher, len(pairs))
-				// for i, pair := range pairs {
-				// 	kv := strings.Split(pair, "=")
-				// 	if len(kv) != 2 {
-				// 		panic("Invalid silence parameters format, expecting key1=value1,key2=value2,...")
-				// 	}
-				// 	silenceMatcher[i] = &models.Matcher{
-				// 		Name:    swag.String(kv[0]),
-				// 		Value:   swag.String(kv[1]),
-				// 		IsRegex: swag.Bool(false),
-				// 	}
-				// }
+				// Parse silenceParams into key-value pairs
+				paramsSets := strings.Split(silenceParams, ";")
+				silenceMatcher := make([]*models.Matcher, 0)
+				for _, paramSet := range paramsSets {
+					pairs := strings.Split(paramSet, ",")
+					for _, pair := range pairs {
+						kv := strings.Split(pair, "=")
+						if len(kv) != 2 {
+							panic("Invalid silence parameters format, expecting key1=value1,key2=value2,...")
+						}
+						silenceMatcher = append(silenceMatcher, &models.Matcher{
+							Name:    swag.String(kv[0]),
+							Value:   swag.String(kv[1]),
+							IsRegex: swag.Bool(false),
+						})
+					}
+				}
 
-				// // Create a new silence
-				// newSilence := &models.PostableSilence{
-				// 	Matchers: silenceMatcher,
-				// 	StartsAt: &models.EpochTime{Time: startsAt},
-				// 	EndsAt:   &models.EpochTime{Time: endsAt},
-				// }
+				// Convert time.Time to strfmt.DateTime
+				startsAtStrFmt, err := strfmt.ParseDateTime(startsAt.Format(time.RFC3339))
+				if err != nil {
+					panic("Failed to convert startsAt to strfmt.DateTime")
+				}
+				endsAtStrFmt, err := strfmt.ParseDateTime(endsAt.Format(time.RFC3339))
+				if err != nil {
+					panic("Failed to convert endsAt to strfmt.DateTime")
+				}
+
+				// Create a new silence
+				newSilence := &models.PostableSilence{}
+				newSilence.Comment = swag.String("Silenced by amctl")
+				newSilence.Matchers = silenceMatcher
+				newSilence.StartsAt = &startsAtStrFmt
+				newSilence.EndsAt = &endsAtStrFmt
+
+				fmt.Println("Silence parameters:")
+				fmt.Printf("  Starts At: %s\n", startsAtStrFmt)
+				fmt.Printf("  Ends At: %s\n", endsAtStrFmt)
+				fmt.Printf("  Matchers: %v\n", silenceMatcher)
+
+				resp, err := apiClient.Silence.PostSilences(postSilenceParams.WithSilence(newSilence))
+				if err != nil {
+					if apiErr, ok := err.(*runtime.APIError); ok {
+						if httpResponse, ok := apiErr.Response.(*http.Response); ok {
+							responseBody, readErr := io.ReadAll(httpResponse.Body)
+							if readErr != nil {
+								fmt.Printf("Error reading response body: %s\n", readErr)
+							} else {
+								fmt.Printf("Error silencing alerts: %s\n", string(responseBody))
+							}
+						} else {
+							fmt.Printf("Error silencing alerts: %v\n", apiErr.Response)
+						}
+					} else {
+						fmt.Println("Error silencing alerts: ", err)
+					}
+					return
+				}
+
+				fmt.Printf("Silence ID: %s\n", *resp.GetPayload())
 
 			} else {
 				fmt.Println("Fetching Alertmanager status:")
@@ -204,7 +257,6 @@ func init() {
 	rootCmd.Flags().StringVarP(&alertmanagerURL, "alertmanager", "a", "", "Alertmanager URL")
 	rootCmd.Flags().BoolVarP(&list, "list", "l", false, "List alerts")
 	rootCmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "Skip TLS verification")
-	rootCmd.Flags().BoolVarP(&silence, "silence", "s", false, "Silence Alert")
 	rootCmd.Flags().StringVarP(&silenceParams, "silence-params", "d", "", "Silence Parameters list of labels and values")
 	rootCmd.Flags().StringVarP(&endTime, "end-time", "e", "", "End Time for Silence")
 }
@@ -220,15 +272,3 @@ func convertDate(date string) string {
 
 	return dateConv
 }
-
-// func parsingDate(date string) string {
-// 	dateParse, err := time.Parse("2006-01-02T15:04:05.999999999Z", date)
-// 	if err != nil {
-// 		fmt.Println("Error converting date: ", err)
-// 		dateParse = time.Now()
-// 	}
-
-// 	dateConv := dateParse.Format("2006-01-02T15:04:05.999999999Z")
-
-// 	return dateConv
-// }
