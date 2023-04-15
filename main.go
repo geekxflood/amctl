@@ -21,7 +21,9 @@ THE SOFTWARE.
 */
 package main
 
-import "alertmanager-cli/cmd"
+import (
+	"alertmanager-cli/cmd"
+)
 
 func main() {
 	cmd.Execute()

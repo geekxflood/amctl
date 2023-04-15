@@ -22,7 +22,9 @@ THE SOFTWARE.
 package cmd
 
 import (
+	"crypto/tls"
 	"fmt"
+	"net/http"
 	"os"
 
 	"github.com/prometheus/alertmanager/api/v2/client"
@@ -34,8 +36,8 @@ import (
 var alertmanagerURL string
 var list bool
 var foundAlert bool
+var secure bool
 
-// rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "amctl",
 	Short: "Alertmanager CLI",
@@ -44,11 +46,20 @@ var rootCmd = &cobra.Command{
 			fmt.Println("Please provide an Alertmanager URL")
 			return
 		}
+
 		apiClient := client.NewHTTPClientWithConfig(nil, &client.TransportConfig{
 			Host:     alertmanagerURL,
 			BasePath: client.DefaultBasePath,
 			Schemes:  []string{"http"},
 		})
+
+		// apiClient ignore ssl verify
+		if secure {
+			tr := &http.Transport{
+				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+			}
+			http.DefaultClient = &http.Client{Transport: tr}
+		}
 
 		if list {
 			fmt.Println("Listing alerts")
@@ -102,8 +113,6 @@ var rootCmd = &cobra.Command{
 	},
 }
 
-// Execute adds all child commands to the root command and sets flags appropriately.
-// This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	err := rootCmd.Execute()
 	if err != nil {
@@ -112,14 +121,7 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.alertmanager-cli.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
 	rootCmd.Flags().StringVarP(&alertmanagerURL, "alertmanager", "a", "", "Alertmanager URL")
 	rootCmd.Flags().BoolVarP(&list, "list", "l", false, "List alerts")
+	rootCmd.Flags().BoolVarP(&secure, "secure", "s", false, "Use HTTPS")
 }
