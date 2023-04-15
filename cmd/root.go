@@ -45,6 +45,10 @@ var styleSeverityCritical = lipgloss.NewStyle().
 	Background(lipgloss.Color("#FF0000")).
 	Foreground(lipgloss.Color("#FFFFFF"))
 
+var styleHeader = lipgloss.NewStyle().
+	PaddingTop(1).
+	Underline(true)
+
 var rootCmd = &cobra.Command{
 	Use:   "amctl",
 	Short: "Alertmanager CLI",
@@ -96,7 +100,7 @@ var rootCmd = &cobra.Command{
 			// Print the alert name, start and end time, labels and annotations
 			for _, alert := range alerts.GetPayload() {
 				if *alert.Status.State == "active" {
-					fmt.Printf("Alert Name: %s\n", alert.Labels["alertname"])
+					fmt.Println(styleHeader.Render("Alert Name:", alert.Labels["alertname"]))
 					fmt.Printf("Starts At: %s\n", convertDate(alert.StartsAt.String()))
 					fmt.Printf("Labels:\n")
 
