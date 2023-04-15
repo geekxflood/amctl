@@ -39,6 +39,9 @@ var alertmanagerURL string
 var list bool
 var foundAlert bool
 var insecure bool
+var silence bool
+var silenceParams string
+var endTime string
 
 var styleSeverityCritical = lipgloss.NewStyle().
 	Bold(true).
@@ -133,19 +136,58 @@ var rootCmd = &cobra.Command{
 			// If the user does not want to list the alerts
 			// We will just print the Alertmanager status
 		} else {
-			fmt.Println("Fetching Alertmanager status:")
+			// If the user does not want to list the alerts
+			// We will just print the Alertmanager status
+			if silence {
+				fmt.Println("Silencing alerts")
 
-			status, err := apiClient.General.GetStatus(statusParams)
-			if err != nil {
-				fmt.Println("Error fetching status: ", err)
-				return
-			}
-			fmt.Printf("Status: %s\n", *status.GetPayload().VersionInfo.Version)
-			fmt.Printf("Uptime: %s\n", *status.GetPayload().Uptime)
-			fmt.Println("Cluster status:")
-			fmt.Printf("  Peers: %d\n", len(status.Payload.Cluster.Peers))
-			for _, peer := range status.Payload.Cluster.Peers {
-				fmt.Printf("Peer: %s\n", *peer.Name)
+				// endsAt := parsingDate(endTime)
+				// startsAt := time.Now()
+				// if endTime == "" {
+				// 	fmt.Println("No end time provided, silencing for 2 hours")
+				// 	endsAt := startsAt.Add(2 * time.Hour)
+				// }
+				// if silenceParams == "" {
+				// 	panic("No silence parameters provided, quitting")
+				// }
+
+				// // Parse silenceParams into key-value pairs
+				// pairs := strings.Split(silenceParams, ",")
+				// silenceMatcher := make([]*models.Matcher, len(pairs))
+				// for i, pair := range pairs {
+				// 	kv := strings.Split(pair, "=")
+				// 	if len(kv) != 2 {
+				// 		panic("Invalid silence parameters format, expecting key1=value1,key2=value2,...")
+				// 	}
+				// 	silenceMatcher[i] = &models.Matcher{
+				// 		Name:    swag.String(kv[0]),
+				// 		Value:   swag.String(kv[1]),
+				// 		IsRegex: swag.Bool(false),
+				// 	}
+				// }
+
+				// // Create a new silence
+				// newSilence := &models.PostableSilence{
+				// 	Matchers: silenceMatcher,
+				// 	StartsAt: &models.EpochTime{Time: startsAt},
+				// 	EndsAt:   &models.EpochTime{Time: endsAt},
+				// }
+
+			} else {
+				fmt.Println("Fetching Alertmanager status:")
+
+				status, err := apiClient.General.GetStatus(statusParams)
+				if err != nil {
+					fmt.Println("Error fetching status: ", err)
+					return
+				}
+				fmt.Printf("Status: %s\n", *status.GetPayload().VersionInfo.Version)
+				fmt.Printf("Uptime: %s\n", *status.GetPayload().Uptime)
+				fmt.Println("Cluster status:")
+				fmt.Printf("  Peers: %d\n", len(status.Payload.Cluster.Peers))
+				for _, peer := range status.Payload.Cluster.Peers {
+					fmt.Printf("Peer: %s\n", *peer.Name)
+				}
 			}
 		}
 	},
@@ -162,6 +204,9 @@ func init() {
 	rootCmd.Flags().StringVarP(&alertmanagerURL, "alertmanager", "a", "", "Alertmanager URL")
 	rootCmd.Flags().BoolVarP(&list, "list", "l", false, "List alerts")
 	rootCmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "Skip TLS verification")
+	rootCmd.Flags().BoolVarP(&silence, "silence", "s", false, "Silence Alert")
+	rootCmd.Flags().StringVarP(&silenceParams, "silence-params", "d", "", "Silence Parameters list of labels and values")
+	rootCmd.Flags().StringVarP(&endTime, "end-time", "e", "", "End Time for Silence")
 }
 
 func convertDate(date string) string {
@@ -175,3 +220,15 @@ func convertDate(date string) string {
 
 	return dateConv
 }
+
+// func parsingDate(date string) string {
+// 	dateParse, err := time.Parse("2006-01-02T15:04:05.999999999Z", date)
+// 	if err != nil {
+// 		fmt.Println("Error converting date: ", err)
+// 		dateParse = time.Now()
+// 	}
+
+// 	dateConv := dateParse.Format("2006-01-02T15:04:05.999999999Z")
+
+// 	return dateConv
+// }
