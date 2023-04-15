@@ -26,7 +26,9 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/prometheus/alertmanager/api/v2/client"
 	"github.com/prometheus/alertmanager/api/v2/client/alert"
 	"github.com/prometheus/alertmanager/api/v2/client/general"
@@ -37,6 +39,11 @@ var alertmanagerURL string
 var list bool
 var foundAlert bool
 var insecure bool
+
+var styleSeverityCritical = lipgloss.NewStyle().
+	Bold(true).
+	Background(lipgloss.Color("#FF0000")).
+	Foreground(lipgloss.Color("#FFFFFF"))
 
 var rootCmd = &cobra.Command{
 	Use:   "amctl",
@@ -90,12 +97,17 @@ var rootCmd = &cobra.Command{
 			for _, alert := range alerts.GetPayload() {
 				if *alert.Status.State == "active" {
 					fmt.Printf("Alert Name: %s\n", alert.Labels["alertname"])
-					fmt.Printf("Starts At: %s\n", alert.StartsAt.String())
-					fmt.Printf("Ends At: %s\n", alert.EndsAt.String())
+					fmt.Printf("Starts At: %s\n", convertDate(alert.StartsAt.String()))
 					fmt.Printf("Labels:\n")
 
 					for labelKey, labelValue := range alert.Labels {
-						fmt.Printf("  %s: %s\n", labelKey, labelValue)
+						if labelKey == "severity" {
+							if labelValue == "critical" {
+								fmt.Printf("  %s: %s\n", labelKey, styleSeverityCritical.Render(labelValue))
+							}
+						} else {
+							fmt.Printf("  %s: %s\n", labelKey, labelValue)
+						}
 					}
 
 					fmt.Printf("Annotations:\n")
@@ -146,4 +158,16 @@ func init() {
 	rootCmd.Flags().StringVarP(&alertmanagerURL, "alertmanager", "a", "", "Alertmanager URL")
 	rootCmd.Flags().BoolVarP(&list, "list", "l", false, "List alerts")
 	rootCmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "Skip TLS verification")
+}
+
+func convertDate(date string) string {
+	dateParse, err := time.Parse("2006-01-02T15:04:05.999999999Z", date)
+	if err != nil {
+		fmt.Println("Error converting date: ", err)
+		dateParse = time.Now()
+	}
+
+	dateConv := dateParse.Format("Mon 2 Jan 2006 15:04:05")
+
+	return dateConv
 }
