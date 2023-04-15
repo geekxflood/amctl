@@ -36,6 +36,7 @@ import (
 var alertmanagerURL string
 var list bool
 var foundAlert bool
+var insecure bool
 
 var rootCmd = &cobra.Command{
 	Use:   "amctl",
@@ -54,24 +55,31 @@ var rootCmd = &cobra.Command{
 			Schemes:  []string{"http"},
 		})
 
+		// Create a new parameter for the API call
+		// The parameter will be used to filter the alerts
+		statusParams := general.NewGetStatusParams()
+		alertParams := alert.NewGetAlertsParams()
+		if insecure {
+			statusParams.HTTPClient = &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			}
+			alertParams.HTTPClient = &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			}
+		}
+
 		// Check if the user wants to list the alerts
 		// If not, we will just print the Alertmanager status
 		if list {
 			fmt.Println("Listing alerts")
 
-			// Create a new parameter for the API call
-			// The parameter will be used to filter the alerts
-			params := alert.NewGetAlertsParams()
-
-			params.HTTPClient = &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				},
-			}
-
 			// Make the API call
 			// The API call will return a list of alerts
-			alerts, err := apiClient.Alert.GetAlerts(params)
+			alerts, err := apiClient.Alert.GetAlerts(alertParams)
 			if err != nil {
 				fmt.Println("Error fetching alerts: ", err)
 				return
@@ -110,7 +118,8 @@ var rootCmd = &cobra.Command{
 			// We will just print the Alertmanager status
 		} else {
 			fmt.Println("Fetching Alertmanager status:")
-			status, err := apiClient.General.GetStatus(general.NewGetStatusParams())
+
+			status, err := apiClient.General.GetStatus(statusParams)
 			if err != nil {
 				fmt.Println("Error fetching status: ", err)
 				return
@@ -136,4 +145,5 @@ func Execute() {
 func init() {
 	rootCmd.Flags().StringVarP(&alertmanagerURL, "alertmanager", "a", "", "Alertmanager URL")
 	rootCmd.Flags().BoolVarP(&list, "list", "l", false, "List alerts")
+	rootCmd.Flags().BoolVarP(&insecure, "insecure", "i", false, "Skip TLS verification")
 }
