@@ -2,9 +2,7 @@
 
 package main
 
-import (
-	"github.com/geekxflood/alertmanager-cli/cmd"
-)
+import "github.com/geekxflood/alertmanager-cli/cmd"
 
 func main() {
 	cmd.Execute()

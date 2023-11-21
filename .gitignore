@@ -10,3 +10,4 @@
 build/
 output/
 binary/
+alertmanager/
