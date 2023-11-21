@@ -1,4 +1,4 @@
-# alertmanager-cli
+# amctl
 
 ## Status
 
