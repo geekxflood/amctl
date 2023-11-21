@@ -36,4 +36,4 @@ go install github.com/geekxflood/amctl@latest
 - `--hostname` `string`   hostname of the service (default "localhost")
 - `--scheme` `string`     Choose from: `http` (default `http`)
 
-Use "`amctl` `command` `--help`" for more information about a command.
+Use `amctl` `command` `--help` for more information about a command.
