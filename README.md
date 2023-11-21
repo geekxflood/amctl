@@ -8,7 +8,7 @@ go install github.com/geekxflood/amctl@latest
 
 ## Usage:
 
-`amctl` [command]
+`amctl` `command` `flags`
 
 ## Available Commands:
 
