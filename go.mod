@@ -1,4 +1,4 @@
-module alertmanager-cli
+module github.com/geekxflood/alertmanager-cli
 
 go 1.20
 
