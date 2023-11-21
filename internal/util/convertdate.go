@@ -1,6 +1,6 @@
-// global/globalFunctions.go
+// internal/util/convertdate.go
 
-package global
+package util
 
 import (
 	"fmt"
