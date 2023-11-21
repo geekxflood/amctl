@@ -3,7 +3,7 @@
 package main
 
 import (
-	"alertmanager-cli/cmd"
+	"github.com/geekxflood/alertmanager-cli/cmd"
 )
 
 func main() {
