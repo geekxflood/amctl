@@ -1,9 +1,0 @@
-version: "3.8"
-services:
-  alertmanager:
-    image: prom/alertmanager
-    volumes:
-      - "./alertmanager:/config"
-    command: --config.file=/config/alertmanager.yml --log.level=debug    
-    ports:
-      - 9093:9093

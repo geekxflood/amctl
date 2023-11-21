@@ -1,7 +1,0 @@
----
-route:
-  receiver: "main"
-  group_wait: 30s
-
-receivers:
-  - name: "main"
