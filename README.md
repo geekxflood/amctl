@@ -1,5 +1,11 @@
 # amctl
 
+## Description
+
+`amctl` is a command line tool for interacting with Alertmanager API.
+
+It has been built using `go-swagger generate cli` command based on v2 Alertmanager OpenAPI specification.
+
 ## Installation
 
 ```bash
