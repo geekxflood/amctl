@@ -1,0 +1,8 @@
+route:
+  receiver: 'discord'
+  repeat_interval: 4h
+  group_by: [ alertname ]
+
+receivers:
+  - name: 'discord'
+    webhook_url: ${DISCORD_WEBHOOK_URL}
