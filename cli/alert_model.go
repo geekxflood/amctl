@@ -8,8 +8,8 @@ package cli
 import (
 	"fmt"
 
-	"github.com/geekxflood/alertmanager-cli/models"
 	"github.com/spf13/cobra"
+	"github.com/prometheus/alertmanager/api/v2/models"
 )
 
 // Schema cli for Alert

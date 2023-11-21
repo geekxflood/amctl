@@ -9,10 +9,8 @@ import (
 	"fmt"
 
 	"github.com/go-openapi/swag"
-
 	"github.com/spf13/cobra"
-	"github.com/geekxflood/alertmanager-cli/models"
-
+	"github.com/prometheus/alertmanager/api/v2/models"
 )
 
 // Schema cli for AlertGroup

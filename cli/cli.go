@@ -12,7 +12,7 @@ import (
 	"path"
 	"path/filepath"
 
-	"github.com/geekxflood/alertmanager-cli/client"
+	"github.com/prometheus/alertmanager/api/v2/client"
 
 	"github.com/go-openapi/runtime"
 	httptransport "github.com/go-openapi/runtime/client"

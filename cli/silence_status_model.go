@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/geekxflood/alertmanager-cli/models"
+	"github.com/prometheus/alertmanager/api/v2/models"
 	"github.com/spf13/cobra"
 )
 

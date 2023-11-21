@@ -8,12 +8,10 @@ package cli
 import (
 	"fmt"
 
+	"github.com/prometheus/alertmanager/api/v2/models"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-
 	"github.com/spf13/cobra"
-	"github.com/geekxflood/alertmanager-cli/models"
-
 )
 
 // Schema cli for GettableSilence

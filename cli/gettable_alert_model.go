@@ -8,10 +8,9 @@ package cli
 import (
 	"fmt"
 
-	"github.com/geekxflood/alertmanager-cli/models"
+	"github.com/prometheus/alertmanager/api/v2/models"
 	"github.com/go-openapi/strfmt"
 	"github.com/go-openapi/swag"
-
 	"github.com/spf13/cobra"
 )
 

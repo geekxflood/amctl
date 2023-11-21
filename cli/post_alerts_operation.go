@@ -9,8 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/geekxflood/alertmanager-cli/client/alert"
-
+	"github.com/prometheus/alertmanager/api/v2/client/alert"
 	"github.com/go-openapi/swag"
 	"github.com/spf13/cobra"
 )
