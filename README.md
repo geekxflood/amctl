@@ -20,7 +20,6 @@ go install github.com/geekxflood/amctl@latest
 
 - `alert`
 - `alertgroup`
-- `completion`  Generate completion script
 - `general`
 - `help`        Help about any command
 - `receiver`
@@ -28,12 +27,13 @@ go install github.com/geekxflood/amctl@latest
 
 ### Flags:
 
-- `--base-path` `string`   For example: `/api/v2/` (default `/api/v2/`)
-- `--config` `string`      config file path
-- `--debug`              output debug logs
-- `--dry-run`           do not send the request to server
-- `-h`, `--help`          help for `amctl`
-- `--hostname` `string`   hostname of the service (default "localhost")
-- `--scheme` `string`     Choose from: `http` (default `http`)
+- `--base-path` `string` For example: `/api/v2/` (default `/api/v2/`)
+- `--config` `string` config file path
+- `--debug` output debug logs
+- `--dry-run` do not send the request to server
+- `-h`, `--help`help for `amctl`
+- `--hostname` `string` hostname of the service (default "localhost")
+- `--insecure` disable TLS verification
+- `--scheme` `string` Choose from: `http` (default `http`)
 
 Use `amctl` `command` `--help` for more information about a command.
