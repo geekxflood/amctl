@@ -173,12 +173,6 @@ func makeOperationGroupAlertCmd() (*cobra.Command, error) {
 	}
 	operationGroupAlertCmd.AddCommand(operationGetAlertsCmd)
 
-	operationPostAlertsCmd, err := makeOperationAlertPostAlertsCmd()
-	if err != nil {
-		return nil, err
-	}
-	operationGroupAlertCmd.AddCommand(operationPostAlertsCmd)
-
 	return operationGroupAlertCmd, nil
 }
 func makeOperationGroupAlertgroupCmd() (*cobra.Command, error) {

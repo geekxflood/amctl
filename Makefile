@@ -12,8 +12,8 @@ build:
 		-o build/$(IMAGE_NAME) \
 		./...
 
-install: build
-	cp build/$(IMAGE_NAME) /usr/local/bin/$(IMAGE_NAME)
+install: 
+	go install .
 
 clean:
 	rm -rf build
